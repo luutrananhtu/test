@@ -1,0 +1,9 @@
+.img-fluid {
+  max-width: 42%;
+  padding-left: 74px;
+}
+
+.table td,
+.table th {
+  vertical-align: middle !important;
+}
