@@ -12,9 +12,7 @@ class SortingItem extends PureComponent {
     const { sortingItem, onChangeSort } = this.props;
 
     return (
-      <div>
-        <li onClick={() => onChangeSort(sortingItem)}>{sortingItem.title}</li>
-      </div>
+      <li onClick={() => onChangeSort(sortingItem)}>{sortingItem.text}</li>
     );
   }
 }

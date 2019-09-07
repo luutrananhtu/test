@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent } from "react";
 // import PropTypes from 'prop-types';
 
 class DefaultSortingItem extends PureComponent {
@@ -6,18 +6,16 @@ class DefaultSortingItem extends PureComponent {
     const { defaultSortingItem, onClick } = this.props;
 
     return (
-      <div>
-        <li className="type_sorting_btn"
-          onClick={e => onClick(defaultSortingItem)}>
-          {defaultSortingItem.title}
-        </li>
-      </div>
+      <li
+        className="type_sorting_btn"
+        onClick={e => onClick(defaultSortingItem)}
+      >
+        {defaultSortingItem.title}
+      </li>
     );
   }
 }
 
-DefaultSortingItem.propTypes = {
-
-};
+DefaultSortingItem.propTypes = {};
 
 export default DefaultSortingItem;

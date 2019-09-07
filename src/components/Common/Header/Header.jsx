@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import "./Header.css";
@@ -83,9 +83,9 @@ class Header extends Component {
               <div className="row">
                 <div className="col-lg-12 text-right">
                   <div className="logo_container">
-                    <a href="#">
+                    <NavLink to="/">
                       Nordic<span>Shop</span>
-                    </a>
+                    </NavLink>
                   </div>
                   <nav className="navbar">
                     <ul className="navbar_menu">

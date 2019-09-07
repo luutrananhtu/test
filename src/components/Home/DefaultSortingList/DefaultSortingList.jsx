@@ -4,22 +4,20 @@ import DefaultSortingItem from "../DefaultSortingItem/DefaultSortingItem";
 
 class DefaultSortingList extends PureComponent {
   render() {
-    const { onDefaultSortingItemClick, sortType } = this.props;
-    const sortArray = Object.keys(sortType);
+    const { onDefaultSortingItemClick, sortingList } = this.props;
+    const sortingArray = Object.keys(sortingList);
     // console.log(sortArray);
     return (
-      <div>
-        <ul className="sorting_type">
-          {sortArray.map(sortItem => (
-            <li
-              className="type_sorting_btn"
-              onClick={() => onDefaultSortingItemClick(sortItem)}
-            >
-              {sortType[sortItem]}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul className="sorting_type">
+        {sortingArray.map((sortItem, sortingType) => (
+          <li
+            key={sortingType}
+            onClick={() => onDefaultSortingItemClick(sortItem)}
+          >
+            {sortingList[sortItem]}
+          </li>
+        ))}
+      </ul>
     );
   }
 }

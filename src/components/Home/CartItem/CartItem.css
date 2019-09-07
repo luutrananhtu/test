@@ -1,6 +1,6 @@
 .img-fluid {
-  max-width: 42%;
-  padding-left: 74px;
+  width: 100px;
+  height: auto;
 }
 
 .table td,

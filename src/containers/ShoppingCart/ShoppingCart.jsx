@@ -23,6 +23,15 @@ class ShoppingCart extends PureComponent {
 
   render() {
     const { cartList, onAddToCart, onRemoveItem } = this.props;
+    if (cartList.length === 0)
+      return (
+        <div className="cartImg">
+          <img
+            src="https://cdn.dribbble.com/users/887568/screenshots/3172047/ufo.gif"
+            alt=""
+          />
+        </div>
+      );
     return (
       <div style={{ marginTop: "200px" }}>
         <section className="section">

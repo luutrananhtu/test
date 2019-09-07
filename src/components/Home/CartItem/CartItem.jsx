@@ -15,13 +15,13 @@ class CartItem extends PureComponent {
     console.log("object", 11111, cartItem);
     return (
       <tr>
-        <th scope="row">
+        <td>
           <img
             src={cartItem.product.image}
             alt=""
             className="img-fluid z-depth-0"
           />
-        </th>
+        </td>
         <td>
           <h5>
             <strong>{cartItem.product.name}</strong>

@@ -15,123 +15,181 @@ import SideBar from "../../components/Home/SideBar/SideBar";
 class ProductPage extends PureComponent {
   constructor(props) {
     super(props);
+    const urlParams = new URLSearchParams(this.props.location.search);
+    const initPage = Number(urlParams.get("page"));
+    const initShow = Number(urlParams.get("show"));
+    const initSort = urlParams.get("sort");
+    const initFromPrice = Number(urlParams.get("fromPrice"));
+    const initToPrice = Number(urlParams.get("toPrice"));
+    const initCategories = urlParams.get("categories");
 
     this.state = {
-      products: [],
       categories: [],
-      sortingList: [
-        {
-          title: 6,
-          id: 0
-        },
-        {
-          title: 12,
-          id: 0
-        },
-        {
-          title: 24,
-          id: 0
-        }
-      ],
-      sortItemTitle: 6,
-
       totalProduct: 0,
-
       currentFilter: {
-        productPerPage: 6,
-        currentPage: 1,
-        defaultSorting: "default",
-        minPrice: 0,
-        maxPrice: 800
+        currentCategories: initCategories ? initCategories : "",
+        sortBy: initSort ? initSort : "default",
+        productOnPage: initShow ? initShow : 6,
+        currentPage: initPage ? initPage : 1,
+        minPrice: initFromPrice ? initFromPrice : 300,
+        maxPrice: initToPrice ? initToPrice : 700
       },
-      pageArray: [],
-      totalPage: 0
+      productList: []
     };
+    console.log(this.state);
   }
-  getProduct = () => {
+  getProductList = async productFilter => {
+    const {
+      currentCategories,
+      sortBy,
+      productOnPage,
+      currentPage,
+      minPrice,
+      maxPrice
+    } = productFilter;
+
     let filter = {
-      limit: this.state.currentFilter.productPerPage,
-      skip:
-        (this.state.currentFilter.currentPage - 1) *
-        this.state.currentFilter.productPerPage,
-      order:
-        this.state.currentFilter.defaultSorting === "default"
-          ? ""
-          : this.state.currentFilter.defaultSorting,
+      limit: productOnPage,
+      skip: productOnPage * (currentPage - 1),
+      order: `${sortBy === "default" ? "" : sortBy}`,
       where: {
-        categoryId: this.state.currentFilter.currentCategories,
         salePrice: {
-          between: [
-            this.state.currentFilter.minPrice,
-            this.state.currentFilter.maxPrice
-          ]
+          between: [minPrice, maxPrice]
         }
       }
     };
-    if (
-      filter.where.categoryId === "all" ||
-      filter.where.categoryId === undefined
-    ) {
-      delete filter.where.categoryId;
+    // If currentCategories is undefined - get all product
+    // otherwise, get product by provided category.
+    if (!!currentCategories && currentCategories !== "all") {
+      filter = {
+        ...filter,
+        where: {
+          ...filter.where,
+          categoryId: currentCategories
+        }
+      };
     }
+
     const params = {
       filter: JSON.stringify(filter)
     };
 
-    return productApi
-      .getAll(params)
-      .then(newProduct => {
-        const { body: products } = newProduct;
-        const totalProduct = newProduct.pagination.total;
-        const totalPage = Math.ceil(totalProduct / newProduct.pagination.limit);
-        const pageArray = Array.from({ length: totalPage });
-        this.setState({
-          products,
-          totalProduct,
-          totalPage,
-          pageArray
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  };
-
-  componentDidMount = async () => {
-    this.getProduct();
-  };
-
-  handleCategoryClick = categories => {};
-
-  handleSortClick = ({ title }) => {
+    console.log(filter);
+    const response = await productApi.getAll(params);
+    const { body: productList } = response;
+    const totalProduct = response.pagination.total;
+    console.log(response);
     this.setState({
-      sortItemTitle: title,
-      currentFilter: {
-        ...this.state.currentFilter,
-        productPerPage: title,
-        currentPage: 1,
-        defaultSorting: "default",
-        minPrice: 0,
-        maxPrice: 800
-      }
+      productList,
+      totalProduct
     });
   };
 
-  handleDefaultClick = sortBy => {};
+  componentDidMount = async () => {
+    try {
+      await this.getProductList(this.state.currentFilter);
 
-  handleFilterClick = async (min, max) => {};
+      const categoriesList = await categoriesApi.getAll();
+      const { body: categories } = categoriesList;
+      categories.push({
+        id: "all",
+        name: "All"
+      });
+      this.setState({ categories });
+      console.log(categories);
+    } catch (error) {
+      throw error;
+    }
+  };
 
-  handlePaginationClick = async currPage => {};
+  makeParamsURL = filter => {
+    return `/product?categories=${filter.currentCategories}&show=${filter.productOnPage}&page=${filter.currentPage}&sort=${filter.sortBy}&fromPrice=${filter.minPrice}&toPrice=${filter.maxPrice}`;
+  };
 
-  render() {
-    const { sortingList, currentFilter, totalProduct } = this.state;
-    const { defaultSortingItem } = this.state;
-    const sortType = {
-      default: "Default Sorting",
-      salePrice: "Price",
-      name: "Product Name"
+  handleCategoryClick = categories => {
+    let newState = {
+      ...this.state,
+      currentFilter: {
+        ...this.state.currentFilter,
+        currentCategories: categories,
+        currentPage: 1
+      }
     };
 
+    this.setState(newState);
+    this.getProductList(newState.currentFilter);
+    this.props.history.push(this.makeParamsURL(newState.currentFilter));
+  };
+
+  handleChangeSortClick = sort => {
+    let newState = {
+      ...this.state,
+      currentFilter: {
+        ...this.state.currentFilter,
+        sortBy: sort
+      }
+    };
+    console.log(newState);
+    this.setState(newState);
+    this.getProductList(newState.currentFilter);
+    this.props.history.push(this.makeParamsURL(newState.currentFilter));
+  };
+
+  handleShowProductClick = numProduct => {
+    let newState = {
+      ...this.state,
+      currentFilter: {
+        ...this.state.currentFilter,
+        productOnPage: numProduct,
+        currentPage: 1
+      }
+    };
+    console.log(newState);
+    this.setState(newState);
+    this.getProductList(newState.currentFilter);
+    this.props.history.push(this.makeParamsURL(newState.currentFilter));
+  };
+
+  handleFilterClick = async (min, max) => {
+    let newState = {
+      ...this.state,
+      currentFilter: {
+        ...this.state.currentFilter,
+        minPrice: min,
+        maxPrice: max
+      }
+    };
+    // console.log(newState);
+    this.setState(newState);
+    this.getProductList(newState.currentFilter);
+    this.props.history.push(this.makeParamsURL(newState.currentFilter));
+  };
+
+  handlePaginationClick = async page => {
+    let newState = {
+      ...this.state,
+      currentFilter: {
+        ...this.state.currentFilter,
+        currentPage: page
+      }
+    };
+    // console.log(newState);
+    this.setState(newState);
+    this.getProductList(newState.currentFilter);
+    this.props.history.push(this.makeParamsURL(newState.currentFilter));
+  };
+
+  render() {
+    const { currentFilter, totalProduct } = this.state;
+    const sortingDefault = {
+      default: "Default Sorting",
+      salePrice: "Product Price",
+      name: "Product Name"
+    };
+    console.log(this.state);
+    const totalPage = Math.ceil(totalProduct / currentFilter.productOnPage);
+    const pageArray = Array.from(Array(totalPage).keys());
+    // console.log(pageArray);
     return (
       <div className="container product_section_container">
         <div className="row">
@@ -154,6 +212,7 @@ class ProductPage extends PureComponent {
               handleCategoryClick={this.handleCategoryClick}
               categories={this.state.categories}
               onFilterClick={this.handleFilterClick}
+              currentFilter={this.state.currentFilter}
             />
 
             <div className="main_content">
@@ -164,16 +223,15 @@ class ProductPage extends PureComponent {
                       <ul className="product_sorting">
                         <li>
                           <span className="type_sorting_text">
-                            {sortType[currentFilter.defaultSorting]}
+                            {sortingDefault[this.state.currentFilter.sortBy]}
                           </span>
                           <i className="fa fa-angle-down" />
                           {/* <ul className="sorting_type"> */}
                           <DefaultSortingList
-                            onDefaultSortingItemClick={() => {
-                              this.handleDefaultClick();
-                            }}
-                            defaultSortingList={defaultSortingItem}
-                            sortType={sortType}
+                            onDefaultSortingItemClick={
+                              this.handleChangeSortClick
+                            }
+                            sortingList={sortingDefault}
                           />
                           {/* <li className="type_sorting_btn" data-isotope-option='{ "sortBy": "original-order" }'><span>Default Sorting</span></li>
                             <li className="type_sorting_btn" data-isotope-option='{ "sortBy": "price" }'><span>Price</span></li>
@@ -183,12 +241,11 @@ class ProductPage extends PureComponent {
                         <li>
                           <span>Show</span>
                           <span className="num_sorting_text">
-                            {this.state.sortItemTitle}
+                            {this.state.currentFilter.productOnPage}
                           </span>
                           <i className="fa fa-angle-down" />
                           <SortingList
-                            onSortingItemClick={this.handleSortClick}
-                            sortingList={sortingList}
+                            onSortingItemClick={this.handleShowProductClick}
                           />
                         </li>
                       </ul>
@@ -196,14 +253,14 @@ class ProductPage extends PureComponent {
                         <div className="page_current">
                           <span>{currentFilter.currentPage}</span>
                           <ul className="page_selection">
-                            {this.state.pageArray.map((_, idx) => (
+                            {pageArray.map(page => (
                               <li
-                                key={idx}
+                                key={page + 1}
                                 onClick={() =>
-                                  this.handlePaginationClick(idx + 1)
+                                  this.handlePaginationClick(page + 1)
                                 }
                               >
-                                <span>{idx + 1}</span>
+                                <span>{page + 1}</span>
                               </li>
                             ))}
                             {/* <li onClick={() => this.handlePaginationClick(1)}>
@@ -218,12 +275,18 @@ class ProductPage extends PureComponent {
                           </ul>
                         </div>
                         <div className="page_total">
-                          <span>of</span> {this.state.totalPage}
+                          <span>of</span> {totalPage}
                         </div>
                         <div
                           id="next_page"
                           className="page_next"
-                          onClick={() => this.handlePaginationClick()}
+                          onClick={() =>
+                            this.handlePaginationClick(
+                              currentFilter.currentPage >= totalPage
+                                ? currentFilter.currentPage
+                                : currentFilter.currentPage + 1
+                            )
+                          }
                         >
                           <i
                             className="fa fa-long-arrow-right"
@@ -234,7 +297,7 @@ class ProductPage extends PureComponent {
                     </div>
 
                     <div className="product-grid">
-                      <ProductList productList={this.state.products} />
+                      <ProductList productList={this.state.productList} />
                     </div>
 
                     <div className="product_sorting_container product_sorting_container_bottom clearfix">
@@ -246,14 +309,14 @@ class ProductPage extends PureComponent {
                           </span>
                           <i className="fa fa-angle-down" />
                           <ul className="sorting_num">
-                            {this.state.pageArray.map((_, idx) => (
+                            {pageArray.map(page => (
                               <li
-                                key={idx}
+                                key={page + 1}
                                 onClick={() =>
-                                  this.handlePaginationClick(idx + 1)
+                                  this.handlePaginationClick(page + 1)
                                 }
                               >
-                                <span>{idx + 1}</span>
+                                <span>{page + 1}</span>
                               </li>
                             ))}
                             {/* <li className="num_sorting_btn">
@@ -278,22 +341,16 @@ class ProductPage extends PureComponent {
                         <div className="page_current">
                           <span>{currentFilter.currentPage}</span>
                           <ul className="page_selection">
-                            {this.state.pageArray.map((_, idx) => {
-                              // console.log(idx);
-                              return (
-                                <li
-                                  key={idx}
-                                  style={{ color: "black" }}
-                                  onClick={() =>
-                                    this.handlePaginationClick(idx + 1)
-                                  }
-                                >
-                                  <span style={{ color: "black" }}>
-                                    {idx + 1}
-                                  </span>
-                                </li>
-                              );
-                            })}
+                            {pageArray.map(page => (
+                              <li
+                                key={page + 1}
+                                onClick={() =>
+                                  this.handlePaginationClick(page + 1)
+                                }
+                              >
+                                <span>{page + 1}</span>
+                              </li>
+                            ))}
 
                             {/* <li onClick={() => this.handlePaginationClick(1)}>
                               <span>1</span>
@@ -307,9 +364,19 @@ class ProductPage extends PureComponent {
                           </ul>
                         </div>
                         <div className="page_total">
-                          <span>of</span> {this.state.totalPage}
+                          <span>of</span> {totalPage}
                         </div>
-                        <div id="next_page_1" className="page_next">
+                        <div
+                          id="next_page_1"
+                          className="page_next"
+                          onClick={() =>
+                            this.handlePaginationClick(
+                              currentFilter.currentPage >= totalPage
+                                ? currentFilter.currentPage
+                                : currentFilter.currentPage + 1
+                            )
+                          }
+                        >
                           <i
                             className="fa fa-long-arrow-right"
                             aria-hidden="true"

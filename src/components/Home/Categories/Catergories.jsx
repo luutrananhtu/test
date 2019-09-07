@@ -5,11 +5,7 @@ class Catergories extends PureComponent {
   render() {
     const { categories, onCategoriesClick, cls } = this.props;
     return (
-      <li
-        key={this.props.key}
-        onClick={() => onCategoriesClick(categories)}
-        className={cls}
-      >
+      <li onClick={() => onCategoriesClick(categories)} className={cls}>
         <a> {categories.name} </a>
       </li>
     );

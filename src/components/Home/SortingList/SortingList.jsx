@@ -4,23 +4,16 @@ import SortingItem from "../SortingItem/SortingItem";
 
 class SortingList extends PureComponent {
   render() {
-    const { onSortingItemClick, currentProductNumber } = this.props;
-
+    const { onSortingItemClick } = this.props;
+    const sortingArray = [6, 12, 24];
     return (
-      <div>
-        <ul className="sorting_num">
-          {" "}
-          {this.props.sortingList.map(s => {
-            return (
-              <SortingItem
-                onChangeSort={onSortingItemClick}
-                sortingItem={s}
-                currentProductNumber={currentProductNumber}
-              />
-            );
-          })}
-        </ul>
-      </div>
+      <ul className="sorting_num">
+        {sortingArray.map((sortItem, sortingNumber) => (
+          <li key={sortingNumber} onClick={() => onSortingItemClick(sortItem)}>
+            {sortItem}
+          </li>
+        ))}
+      </ul>
     );
   }
 }

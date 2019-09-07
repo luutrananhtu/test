@@ -6,9 +6,10 @@ import CategoriesList from "../CategoriesList/CategoriesList";
 class SideBar extends PureComponent {
   constructor(props) {
     super(props);
+
     this.state = {
-      minPrice: 300,
-      maxPrice: 700
+      minPrice: this.props.currentFilter.minPrice,
+      maxPrice: this.props.currentFilter.maxPrice
     };
   }
 
@@ -18,7 +19,7 @@ class SideBar extends PureComponent {
   };
 
   render() {
-    const { onFilterClick } = this.props;
+    const { handleCategoryClick, onFilterClick, categories } = this.props;
     return (
       <div className="sidebar">
         <div className="sidebar_section">
@@ -26,10 +27,13 @@ class SideBar extends PureComponent {
             <h5>Product Category</h5>
           </div>
           <ul className="sidebar_categories">
-            <CategoriesList
-              onCategoriesClick={this.props.handleCategoryClick}
-              categoriesList={this.props.categories}
-            />
+            <ul className="arrivals_grid_sorting clearfix button-group filters-button-group">
+              {categories.map(cat => (
+                <li key={cat.name} onClick={() => handleCategoryClick(cat.id)}>
+                  <a> {cat.name} </a>
+                </li>
+              ))}
+            </ul>
           </ul>
         </div>
 
