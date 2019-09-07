@@ -189,6 +189,7 @@ class ProductPage extends PureComponent {
     console.log(this.state);
     const totalPage = Math.ceil(totalProduct / currentFilter.productOnPage);
     const pageArray = Array.from(Array(totalPage).keys());
+
     // console.log(pageArray);
     return (
       <div className="container product_section_container">
@@ -297,6 +298,14 @@ class ProductPage extends PureComponent {
                     </div>
 
                     <div className="product-grid">
+                      {this.state.productList.length === 0 && (
+                        <div className="loadingImg">
+                          <img
+                            src="https://loading.io/spinners/cutiefox/index.cutie-fox-spinner.svg"
+                            alt=""
+                          />
+                        </div>
+                      )}
                       <ProductList productList={this.state.productList} />
                     </div>
 

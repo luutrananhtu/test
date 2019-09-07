@@ -76,6 +76,19 @@ class NewArrival extends PureComponent {
   };
 
   render() {
+    if (
+      this.state.products.length === 0 ||
+      this.state.categories.length === 0
+    ) {
+      return (
+        <div className="loadingImg">
+          <img
+            src="https://loading.io/spinners/cutiefox/index.cutie-fox-spinner.svg"
+            alt=""
+          />
+        </div>
+      );
+    }
     return (
       <div className="new_arrivals">
         <div className="container">

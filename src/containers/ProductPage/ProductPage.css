@@ -605,3 +605,9 @@
 .favorite:hover::after {
   color: #fe4c50;
 }
+
+.loadingImg img {
+  width: 200px;
+  height: 200px;
+  text-align: center;
+}
